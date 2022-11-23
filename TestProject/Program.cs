@@ -1,6 +1,4 @@
 ﻿using CacheTower;
-using CacheTower.Extensions;
-using FileCache;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using TestProject;
@@ -10,14 +8,12 @@ var logger = loggerFactory.CreateLogger<Program>();
 
 var services = new ServiceCollection();
 
-services.AddCacheStack<UserData>(
-    new[] {
-        new FileCacheLayer("./cache", logger),
-    },
-    new[] {
-        new AutoCleanupExtension(TimeSpan.FromMinutes(5))
-    }
-);
+services.AddCacheStack<UserData>((_, cache) =>
+{
+    cache.AddMemoryCacheLayer()
+         .AddCustomFileCacheLayer("./cache")
+         .WithCleanupFrequency(TimeSpan.FromMinutes(5));
+});
 
 var serviceProvider = services.BuildServiceProvider();
 
